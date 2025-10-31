@@ -1,0 +1,14 @@
+Two tables for peoples and actions.
+Two table are related with one to many relationship. 
+primary key of peoples table goes into actions table as the foreign key.
+
+Need to add a form to enter people details. 1 Name, 2 phone, 3 email, 4 job
+At the backend database primary key will be assigned to a person. 
+After submiting people form it needs to prompt to actions form. 
+This has to include task/action and remarks/feedbacks. 
+When submitted this has to be saved in backend database with id automatically
+generated from database and peronid from people table as the foreign key.
+
+User should be able to retrieve all the tasks with personid. 
+Also be able to edit past actions. Delete entries. and Add entries
+

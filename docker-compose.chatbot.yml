@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  chatbot_api:
+    build:
+      context: ./chatbot_api
+      dockerfile: Dockerfile
+    ports:
+      - "5005:5005"
+    restart: unless-stopped
+    volumes:
+      - ./chatbot_api:/app
+      - /app/cache  # persistent model cache
+    env_file:
+      - ./chatbot_api/.env
+    environment:
+      - TRANSFORMERS_CACHE=/app/cache

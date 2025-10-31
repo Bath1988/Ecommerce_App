@@ -1,0 +1,10 @@
+pinecone
+sentence-transformers
+python-dotenv
+flask
+transformers
+torch
+flask-cors
+
+
+

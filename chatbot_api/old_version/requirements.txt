@@ -1,0 +1,10 @@
+flask==3.1.2
+flask-cors==6.0.1
+transformers==4.57.1
+sentence-transformers==5.1.2
+torch==2.9.0
+numpy==2.3.4
+pinecone==7.3.0
+python-dotenv==1.2.1
+psycopg2-binary==2.9.11
+openai==2.6.1
