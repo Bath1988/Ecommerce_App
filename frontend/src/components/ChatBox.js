@@ -14,7 +14,7 @@ const ChatBox = () => {
     setMessages(prev => [...prev, { from: 'user', text: userMessage }]);
     setInput('');
     try {
-      const res = await fetch('http://localhost:5005/chat', {
+      const res = await fetch('/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: userMessage })
