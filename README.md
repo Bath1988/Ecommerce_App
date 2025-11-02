@@ -74,11 +74,6 @@ docker compose -f docker-compose.yml -f docker-compose.chatbot.yml up --build -d
 
 you may need to run docker-compose instead of docker compose depending on the docker compose version.
 ```
-
-- Frontend: http://localhost (served by Nginx)
-- API: http://localhost/api
-- Chatbot API: http://localhost/chat
-
 ### Running Services Individually (for debugging)
 You can build and run each service separately:
 ```
