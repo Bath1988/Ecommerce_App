@@ -1,16 +1,25 @@
-
 services:
   chatbot_api:
     build:
       context: ./chatbot_api
       dockerfile: Dockerfile
+    container_name: chatbot_api
     ports:
       - "5005:5005"
     restart: unless-stopped
-    volumes:
-      - ./chatbot_api:/app
-      - /app/cache  # persistent model cache
     env_file:
       - ./chatbot_api/.env
     environment:
-      - TRANSFORMERS_CACHE=/app/cache
+      TRANSFORMERS_CACHE: /app/cache
+    volumes:
+      - ./chatbot_api:/app
+      - chatbot_cache:/app/cache  # named volume for persistent cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/health" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  chatbot_cache:

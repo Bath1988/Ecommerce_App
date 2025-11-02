@@ -1,29 +1,21 @@
-# ===== Stage 1: Build React app =====
-
-# ===== Stage 1: Build React app =====
-FROM node:18.16.1-alpine3.18 AS build
-
+FROM node:18.16.1-alpine3.17 AS build
 WORKDIR /app
-# Copy only package.json and package-lock.json for better cache usage
 COPY package*.json ./
-# Use npm ci for faster, reliable installs in CI/CD and production
-RUN npm ci --legacy-peer-deps
-# Copy the rest of the source code
+RUN npm ci --legacy-peer-deps && npm cache clean --force
 COPY . .
 RUN npm run build
 
-# ===== Stage 2: Serve with Nginx =====
 FROM nginx:1.25.1-alpine3.17
-
-# Remove default nginx config
+LABEL maintainer="Bathiya <your-email@example.com>" \
+      description="Production-ready React app served via Nginx"
 RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy your optimized nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy React build files to Nginx
 COPY --from=build /app/build /usr/share/nginx/html
-
+RUN { \
+      echo 'gzip on;'; \
+      echo 'gzip_types text/plain text/css application/javascript application/json image/svg+xml;'; \
+      echo 'gzip_min_length 256;'; \
+    } > /etc/nginx/conf.d/gzip.conf \
+    && chown -R nginx:nginx /usr/share/nginx/html
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
-

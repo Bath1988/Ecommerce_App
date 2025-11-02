@@ -1,25 +1,40 @@
-# Node dependencies
+# Node dependencies & cache
 node_modules
 npm-debug.log
 yarn-debug.log
 yarn-error.log
+.npm/
+.yarn/
 
-# Build output (handled in Docker multi-stage)
+# Build artifacts (already handled in Docker)
 build
+dist
 
 # Environment files
 .env
-.env.local
-.env.development
-.env.test
-.env.production
+.env.*
 
-# OS and editor files
+# OS / Editor / IDE files
 .DS_Store
+Thumbs.db
+*.log
 *.tmp
 *.swp
-*.log
+.vscode/
+.idea/
 
-# Docker files themselves (not needed in build context)
+# Version control
+.git
+.gitignore
+
+# Test and coverage
+coverage/
+__tests__/
+*.spec.js
+*.test.js
+
+# Docker and CI files
 Dockerfile
 .dockerignore
+docker-compose.yml
+docker-compose*.yml

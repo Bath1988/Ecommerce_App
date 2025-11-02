@@ -2,17 +2,24 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 import os
+import logging
 from openai import OpenAI
 import pinecone
 from sentence_transformers import SentenceTransformer
 from db_utils import get_product_categories, format_categories_for_context
 
 # ----------------------------
-# Flask & Config Setup
+# Setup
 # ----------------------------
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler()]
+)
 
 # ----------------------------
 # Environment Variables
@@ -23,13 +30,14 @@ INDEX_NAME = os.getenv("PINECONE_INDEX", "ecommerce-questions")
 PINECONE_REGION = os.getenv("PINECONE_REGION", "us-east-1")
 
 # ----------------------------
-# Pinecone Setup
+# Initialize Services
 # ----------------------------
 index = None
 try:
     pc = pinecone.Pinecone(api_key=PINECONE_API_KEY)
-    if INDEX_NAME not in [i.name for i in pc.list_indexes()]:
-        print(f"[INFO] Creating Pinecone index: {INDEX_NAME}")
+    existing_indexes = [i.name for i in pc.list_indexes()]
+    if INDEX_NAME not in existing_indexes:
+        logging.info(f"Creating Pinecone index: {INDEX_NAME}")
         pc.create_index(
             name=INDEX_NAME,
             dimension=384,
@@ -38,56 +46,47 @@ try:
         )
     index = pc.Index(INDEX_NAME)
 except Exception as e:
-    print(f"[ERROR] Pinecone setup failed: {e}")
+    logging.error(f"Pinecone setup failed: {e}")
 
-# ----------------------------
-# Models
-# ----------------------------
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # ----------------------------
-# Helper Functions
+# Helpers
 # ----------------------------
 def build_chatbot_context():
-    """Builds a contextual system prompt for the ShopBot assistant."""
     categories = get_product_categories()
     categories_line = format_categories_for_context(categories)
 
     return (
-        "You are ShopBot — a friendly, intelligent AI assistant for an online sales store demo.\n"
-        "Your goal is to help users browse and learn about available products, categories, and features.\n\n"
-        "Important details:\n"
-        "- This is a demo app — no real transactions occur.\n"
-        "- All products and reviews are simulated for demonstration purposes.\n"
-        "- Built by Bhathiya Gamage, a Data Science graduate and engineer passionate about AI and web development.\n"
-        "- Tech stack: React, Flask, PostgreSQL, Docker, Pinecone, openai GPT 3.5.\n\n"
-        "- If user asked about the products mention {categories_line}"
-        "- Give intelligent prompts about {categories_line} product categories where relevant.\n\n"
-
-        f"{categories_line}\n\n"
-
+        "You are ShopBot — a friendly AI assistant for a demo online store.\n"
+        "Help users browse simulated products and categories intelligently.\n"
+        "- No real transactions happen.\n"
+        "- All products are for demonstration only.\n"
+        "- Built by Bathiya Gamage, a data science graduate passionate about AI.\n"
+        "- Tech stack: React, Flask, PostgreSQL, Docker, Pinecone, OpenAI GPT-3.5.\n\n"
+        f"Available categories: {categories_line}\n\n"
         "Guidelines:\n"
-        "- Be concise, friendly, and informative.\n"
-        "- Keep responses under 40 words unless asked for more detail.\n"
-        "- If users ask about Bhathiya or the project, explain it’s an demo ecommerce app integrated with language models.\n"
+        "- Be concise (under 40 words).\n"
+        "- Stay friendly, professional, and informative.\n"
+        "- Mention product categories naturally where relevant.\n"
     )
 
 # ----------------------------
-# Chat Endpoint
+# Routes
 # ----------------------------
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
+    data = request.get_json(force=True)
     user_message = data.get("message", "").strip()
 
     if not user_message:
         return jsonify({"response": "Please provide a message."}), 400
 
     if len(user_message.split()) > 40:
-        return jsonify({"response": "Your message exceeds the 40-word limit. Please shorten it."}), 400
+        return jsonify({"response": "Your message exceeds 40 words. Please shorten it."}), 400
 
-    # Try Pinecone semantic search
+    # Semantic search
     answer = None
     if index:
         try:
@@ -101,29 +100,36 @@ def chat():
                 if score > 0.7 and meta_answer:
                     answer = meta_answer
         except Exception as e:
-            print(f"[WARNING] Pinecone query failed: {e}")
+            logging.warning(f"Pinecone query failed: {e}")
 
     if answer:
         return jsonify({"response": answer})
 
-    # Fallback: OpenAI Chat
+    # Fallback: OpenAI
     try:
         chatbot_context = build_chatbot_context()
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": chatbot_context},
-                {"role": "user", "content": user_message}
+                {"role": "user", "content": user_message},
             ],
             max_tokens=100,
-            temperature=0.7
+            temperature=0.7,
         )
         bot_reply = response.choices[0].message.content.strip()
         bot_reply = " ".join(bot_reply.split()[:40])
         return jsonify({"response": bot_reply})
     except Exception as e:
-        print(f"[ERROR] OpenAI request failed: {e}")
+        logging.error(f"OpenAI request failed: {e}")
         return jsonify({"response": "Sorry, the chatbot is temporarily unavailable."}), 500
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    """Simple health check for Docker Compose."""
+    return jsonify({"status": "ok"}), 200
+
 
 # ----------------------------
 # Run
