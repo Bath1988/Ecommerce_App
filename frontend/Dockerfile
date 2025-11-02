@@ -1,9 +1,14 @@
 # ===== Stage 1: Build React app =====
+
+# ===== Stage 1: Build React app =====
 FROM node:18.16.1-alpine3.18 AS build
 
 WORKDIR /app
+# Copy only package.json and package-lock.json for better cache usage
 COPY package*.json ./
-RUN npm install
+# Use npm ci for faster, reliable installs in CI/CD and production
+RUN npm ci --legacy-peer-deps
+# Copy the rest of the source code
 COPY . .
 RUN npm run build
 

@@ -1,10 +1,23 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
 
 const CartContext = createContext();
+
 
 const initialState = {
   items: [], // { product, quantity }
 };
+
+function getInitialCart() {
+  try {
+    const stored = localStorage.getItem('cart');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    // ignore
+  }
+  return initialState;
+}
 
 function cartReducer(state, action) {
   switch (action.type) {
@@ -46,8 +59,18 @@ function cartReducer(state, action) {
   }
 }
 
+
 export function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [state, dispatch] = useReducer(cartReducer, getInitialCart());
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('cart', JSON.stringify(state));
+    } catch (e) {
+      // ignore
+    }
+  }, [state]);
+
   return (
     <CartContext.Provider value={{ cart: state, dispatch }}>
       {children}

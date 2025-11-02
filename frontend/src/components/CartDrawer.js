@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Box, Typography, IconButton, Button, Divider } from '@mui/material';
+import { Drawer, Box, Typography, IconButton, Button, Divider, TextField, CircularProgress, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useCart } from './CartContext';
 
@@ -79,18 +79,31 @@ export default function CartDrawer({ open, onClose }) {
             <Divider sx={{ my: 2 }} />
             <Typography variant="subtitle1">Total: ${total.toFixed(2)}</Typography>
             <Box sx={{ mt: 2, mb: 1 }}>
-              <input
-                type="text"
-                placeholder="Your Name"
+              <TextField
+                label="Your Name"
                 value={customerName}
                 onChange={e => setCustomerName(e.target.value)}
-                style={{ width: '100%', padding: 8, fontSize: 16, borderRadius: 4, border: '1px solid #ccc' }}
+                fullWidth
                 disabled={loading}
+                variant="outlined"
+                size="small"
+                required
               />
             </Box>
-            {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
-            <Button variant="contained" color="primary" fullWidth sx={{ mt: 1 }} onClick={handleCheckout} disabled={loading}>
-              {loading ? 'Processing...' : 'Checkout'}
+            {error && <Alert severity="error" sx={{ mb: 1 }}>{error}</Alert>}
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 1, position: 'relative' }}
+              onClick={handleCheckout}
+              disabled={loading || cart.items.length === 0}
+            >
+              {loading ? (
+                <>
+                  <CircularProgress size={22} sx={{ color: 'white', mr: 1 }} /> Processing...
+                </>
+              ) : 'Checkout'}
             </Button>
           </>
         )}

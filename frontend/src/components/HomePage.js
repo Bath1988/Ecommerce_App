@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Box, Typography, Button } from '@mui/material';
-import ChatBox from './ChatBox';
+const ChatBox = React.lazy(() => import('./ChatBox'));
 
 export default function HomePage() {
   return (
@@ -26,7 +26,7 @@ export default function HomePage() {
 
       <img 
         src="/images/image.png" 
-        alt="Shopping" 
+        alt="Shopping for products" 
         style={{
           maxWidth: '350px',
           width: '100%',
@@ -35,13 +35,32 @@ export default function HomePage() {
           marginBottom: '24px',
           boxShadow: '0 4px 16px rgba(25, 118, 210, 0.08)'
         }}
+        loading="lazy"
+        role="img"
+        aria-label="Shopping for products"
       />
       <Typography variant="body1" sx={{ mb: 4, color: '#555', maxWidth: 600, textAlign: 'center' }}>
         Browse our wide range of products, read real customer reviews, and manage your orders. Whether you're a customer looking for the best deals or an employee managing inventory, our app makes it simple and beautiful.
       </Typography>
       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <Button href="/customer" variant="contained" color="primary" size="large">Customer Portal</Button>
-        <Button href="/employee" variant="outlined" color="primary" size="large">Employee Portal</Button>
+        <Button 
+          href="/customer" 
+          variant="contained" 
+          color="primary" 
+          size="large"
+          aria-label="Go to Customer Portal"
+        >
+          Customer Portal
+        </Button>
+        <Button 
+          href="/employee" 
+          variant="outlined" 
+          color="primary" 
+          size="large"
+          aria-label="Go to Employee Portal"
+        >
+          Employee Portal
+        </Button>
       </Box>
       <Box sx={{ maxWidth: 600, textAlign: 'center', background: '#f1f8e9', borderRadius: 3, p: 3, boxShadow: 1, mb: 2 }}>
         <Typography variant="h6" sx={{ color: '#388e3c', mb: 1 }}>
@@ -54,7 +73,9 @@ export default function HomePage() {
 
       {/* Chat Box Section */}
       <Box sx={{ position: 'fixed', bottom: 24, right: 24, zIndex: 1000 }}>
-        <ChatBox />
+        <Suspense fallback={<div>Loading chat...</div>}>
+          <ChatBox />
+        </Suspense>
       </Box>
     </Box>
   );
