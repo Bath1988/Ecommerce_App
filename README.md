@@ -72,7 +72,7 @@ Build and start all services (frontend, backend, chatbot, db) in a single networ
 ```
 docker compose -f docker-compose.yml -f docker-compose.chatbot.yml up --build -d
 
-uou may need to run docker-compose instead of docker compose depending on the docker compose version
+you may need to run docker-compose instead of docker compose depending on the docker compose version.
 ```
 
 - Frontend: http://localhost (served by Nginx)
