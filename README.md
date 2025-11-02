@@ -1,3 +1,37 @@
+# Project Architecture
+
+```
+		  ┌──────────────┐
+		  │   Browser    │
+		  └──────┬───────┘
+			  │
+			  ▼
+		  ┌──────────────┐
+		  │   Nginx      │
+		  │ (Frontend)   │
+		  └──────┬───────┘
+	  ┌──────────────┼──────────────┐
+	  │              │              │
+	  ▼              ▼              ▼
+   ┌──────────┐   ┌────────────┐   ┌───────────┐
+   │  API     │   │ Chatbot    │   │  Static   │
+   │ (Node.js │   │  API       │   │  Assets   │
+   │  /api)   │   │ (Flask,    │   │ (React)   │
+   └────┬─────┘   │  /chat)    │   └───────────┘
+	 │         └─────┬──────┘
+	 │               │
+	 ▼               ▼
+   ┌──────────┐    ┌────────────┐
+   │Database  │    │  OpenAI/   │
+   │(Postgres)│    │  Pinecone  │
+   └──────────┘    └────────────┘
+```
+
+**Legend:**
+- Nginx serves the React frontend and proxies `/api` to the Node.js backend and `/chat` to the chatbot API.
+- The backend API connects to the Postgres database.
+- The chatbot API connects to OpenAI and Pinecone for AI features.
+
 
 # Demo Ecommerce App
 
